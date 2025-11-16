@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import os
 from typing import Optional
 
 from .config import Config
@@ -10,6 +11,18 @@ from .detector import detect_platform, Platform
 from .downloader import DownloadManager
 from .exceptions import ValidationError
 from .logger import setup_logging
+
+# Fix Windows console encoding
+if sys.platform == 'win32':
+    try:
+        # Try to set UTF-8 encoding for Windows console
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # Python < 3.7
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -76,13 +89,24 @@ def display_progress(progress_data: dict) -> None:
             else:
                 eta_str = "N/A"
             
-            # Create progress bar
+            # Create progress bar with safe characters
             bar_length = 30
             filled = int(bar_length * percentage / 100)
-            bar = '█' * filled + '░' * (bar_length - filled)
+            
+            # Use ASCII characters for Windows compatibility
+            try:
+                bar = '█' * filled + '░' * (bar_length - filled)
+            except UnicodeEncodeError:
+                # Fallback to ASCII characters
+                bar = '#' * filled + '-' * (bar_length - filled)
             
             # Print progress (use \r to overwrite line)
-            print(f"\r[{bar}] {percentage:.1f}% | {speed_str} | ETA: {eta_str}", end='', flush=True)
+            try:
+                print(f"\r[{bar}] {percentage:.1f}% | {speed_str} | ETA: {eta_str}", end='', flush=True)
+            except UnicodeEncodeError:
+                # Fallback without special characters
+                bar = '#' * filled + '-' * (bar_length - filled)
+                print(f"\r[{bar}] {percentage:.1f}% | {speed_str} | ETA: {eta_str}", end='', flush=True)
 
 
 def display_success(file_path: str, video_title: str) -> None:
@@ -92,7 +116,10 @@ def display_success(file_path: str, video_title: str) -> None:
         file_path: Path to downloaded file.
         video_title: Title of the video.
     """
-    print(f"\n✓ Downloaded: {video_title}")
+    try:
+        print(f"\n✓ Downloaded: {video_title}")
+    except UnicodeEncodeError:
+        print(f"\n[OK] Downloaded: {video_title}")
     print(f"  Location: {file_path}")
 
 
@@ -103,7 +130,10 @@ def display_error(error_message: str, error_type: str = "error") -> None:
         error_message: Error message to display.
         error_type: Type of error (for categorization).
     """
-    print(f"\n✗ Error: {error_message}", file=sys.stderr)
+    try:
+        print(f"\n✗ Error: {error_message}", file=sys.stderr)
+    except UnicodeEncodeError:
+        print(f"\n[ERROR] {error_message}", file=sys.stderr)
 
 
 def main():
