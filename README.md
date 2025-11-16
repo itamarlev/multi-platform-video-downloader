@@ -24,6 +24,42 @@ A simple command-line tool to download videos from YouTube, Instagram, Facebook,
 
 - Python 3.8 or higher
 - pip (Python package manager)
+- **FFmpeg** (required for merging video and audio streams)
+
+### Install FFmpeg
+
+FFmpeg is required to merge video and audio streams for the best quality downloads.
+
+**Windows:**
+1. Download from https://ffmpeg.org/download.html or use Chocolatey:
+   ```bash
+   choco install ffmpeg
+   ```
+2. Or use winget:
+   ```bash
+   winget install ffmpeg
+   ```
+
+**macOS:**
+```bash
+brew install ffmpeg
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt update
+sudo apt install ffmpeg
+```
+
+**Linux (Fedora):**
+```bash
+sudo dnf install ffmpeg
+```
+
+Verify FFmpeg installation:
+```bash
+ffmpeg -version
+```
 
 ### Install from source
 
@@ -106,6 +142,12 @@ You can change the download directory using the `--output-dir` flag, or by editi
 ## Troubleshooting
 
 ### Common Issues
+
+**"Downloaded video has no audio"**
+- FFmpeg is not installed or not in your system PATH
+- Install FFmpeg following the instructions above
+- Restart your terminal after installation
+- Verify with: `ffmpeg -version`
 
 **"Video is private, restricted, or unavailable"**
 - The video may require authentication or is not publicly accessible
