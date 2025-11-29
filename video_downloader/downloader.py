@@ -102,12 +102,13 @@ class DownloadManager:
                 uploader=info.get('uploader', 'Unknown')
             )
     
-    def download_video(self, url: str, progress_callback: Optional[Callable] = None) -> DownloadResult:
+    def download_video(self, url: str, progress_callback: Optional[Callable] = None, audio_only: bool = False) -> DownloadResult:
         """Download video from URL.
         
         Args:
             url: Video URL to download.
             progress_callback: Optional callback function for progress updates.
+            audio_only: If True, download only audio and convert to MP3.
         
         Returns:
             DownloadResult with status and file information.
@@ -126,24 +127,42 @@ class DownloadManager:
         # Sanitize output template
         output_template = str(Path(self.download_dir) / '%(title)s.%(ext)s')
         
-        ydl_opts = {
-            # Format selection: prefer formats with both video and audio
-            # If separate streams, merge them. Fallback to best single file.
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
-            'outtmpl': output_template,
-            'progress_hooks': [progress_hook],
-            'quiet': False,
-            'no_warnings': False,
-            'extract_flat': False,
-            'merge_output_format': 'mp4',
-            # Post-processing to ensure audio is merged
-            'postprocessors': [{
-                'key': 'FFmpegVideoConvertor',
-                'preferedformat': 'mp4',
-            }],
-            # Prefer formats with audio
-            'prefer_ffmpeg': True,
-        }
+        if audio_only:
+            # Audio-only configuration
+            ydl_opts = {
+                'format': 'bestaudio/best',
+                'outtmpl': output_template,
+                'progress_hooks': [progress_hook],
+                'quiet': False,
+                'no_warnings': False,
+                'extract_flat': False,
+                'postprocessors': [{
+                    'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3',
+                    'preferredquality': '192',
+                }],
+                'prefer_ffmpeg': True,
+            }
+        else:
+            # Video with audio configuration
+            ydl_opts = {
+                # Format selection: prefer formats with both video and audio
+                # If separate streams, merge them. Fallback to best single file.
+                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio/best[ext=mp4]/best',
+                'outtmpl': output_template,
+                'progress_hooks': [progress_hook],
+                'quiet': False,
+                'no_warnings': False,
+                'extract_flat': False,
+                'merge_output_format': 'mp4',
+                # Post-processing to ensure audio is merged
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4',
+                }],
+                # Prefer formats with audio
+                'prefer_ffmpeg': True,
+            }
         
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:

@@ -5,6 +5,7 @@ A simple command-line tool to download videos from YouTube, Instagram, Facebook,
 ## Features
 
 - 🎥 Download videos from multiple platforms (YouTube, Instagram, Facebook, Telegram)
+- 🎵 Audio-only download mode (extract audio as MP3)
 - 🎯 Automatically selects the best quality available
 - 📊 Real-time download progress with speed and ETA
 - 📁 Automatic file naming and conflict resolution
@@ -101,6 +102,20 @@ Or use the short form:
 video-downloader https://t.me/channel/123 -o ~/Videos
 ```
 
+### Audio Only Download
+
+Extract and download only the audio as MP3:
+
+```bash
+video-downloader https://www.youtube.com/watch?v=dQw4w9WgXcQ --audio-only
+```
+
+Or use the short form:
+
+```bash
+video-downloader https://www.youtube.com/watch?v=dQw4w9WgXcQ -a
+```
+
 ### Using as Python Module
 
 You can also run the downloader as a Python module:
@@ -129,6 +144,11 @@ video-downloader https://www.facebook.com/watch?v=123456789
 ### Telegram Video
 ```bash
 video-downloader https://t.me/channel/123
+```
+
+### Audio Only (MP3)
+```bash
+video-downloader https://www.youtube.com/watch?v=dQw4w9WgXcQ --audio-only
 ```
 
 ## Configuration

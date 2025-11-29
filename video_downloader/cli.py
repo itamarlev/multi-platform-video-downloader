@@ -45,6 +45,7 @@ Examples:
   video-downloader https://www.youtube.com/watch?v=dQw4w9WgXcQ
   video-downloader https://www.instagram.com/p/ABC123/ --output-dir ~/Videos
   video-downloader https://t.me/channel/123
+  video-downloader https://www.youtube.com/watch?v=dQw4w9WgXcQ --audio-only
         """
     )
     
@@ -59,6 +60,15 @@ Examples:
         dest='output_dir',
         help='Custom download directory (default: ~/Downloads/VideoDownloader)',
         default=None
+    )
+    
+    parser.add_argument(
+        '--audio-only',
+        '-a',
+        dest='audio_only',
+        action='store_true',
+        help='Download audio only (extract audio from video)',
+        default=False
     )
     
     return parser.parse_args()
@@ -173,13 +183,17 @@ def main():
         platform = detect_platform(url)
         print(f"Detected platform: {platform.value.capitalize()}")
         print(f"Download directory: {download_dir}")
+        
+        if args.audio_only:
+            print(f"Mode: Audio only")
+        
         print(f"\nStarting download...")
         
         # Initialize download manager
         manager = DownloadManager(download_dir)
         
-        # Download video
-        result = manager.download_video(url, progress_callback=display_progress)
+        # Download video or audio
+        result = manager.download_video(url, progress_callback=display_progress, audio_only=args.audio_only)
         
         # Display result
         if result.success:
